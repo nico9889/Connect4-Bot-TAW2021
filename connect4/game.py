@@ -25,7 +25,7 @@ class Game:
         self.player_move = None
 
     def __check_turn__(self):
-        return self.player_one == self.bot.id and self.player_one_turn or not self.player_one_turn
+        return (self.player_one == self.bot.id and self.player_one_turn) or (self.player_two == self.bot.id and not self.player_one_turn)
     
     def __make_move__(self):
         if not self.ended and self.__check_turn__():
@@ -33,12 +33,16 @@ class Game:
             status_code = 0
             while status_code != 200 and self.tries < 3:
                 color = 1 if self.bot.id == self.player_one else 2
-                column = self.bot.handler(self.board, color, self.tries > 0)
+                column = self.bot.handler(self.board, color, self.tries > 0, self.remaining_moves == 42)
                 print("Calculated column: " + str(column))
                 self.tries += 1
                 if 0 <= column < 7:
                     res = self.bot.wrap_request(requests.put, self.bot.address + "/v1/game/" + self.id, json={"column": column})
                     status_code = res.status_code
+                    if status_code != 200:
+                        self.update()
+                        if not self.__check_turn__():
+                            status_code = 200
                 else:
                     raise Exception("Invalid move. The handler must return a number between 0 and 6")
             if status_code == 200:
@@ -61,9 +65,4 @@ class Game:
             self.winner = data["winner"]["username"]
         if "ended" in data:
             self.ended = data["ended"]
-        self.__make_move__()
-        
-
-        
-    
-    
+   

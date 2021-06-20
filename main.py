@@ -1,17 +1,12 @@
 from connect4.bot import Bot
 from random import randrange
-import json
-import sys
 
 
 prev_board = None
 
-# Example handler
-def handler(board, color, failed):
-    if failed:
-        raise Exception("Previous move failed. Can't handle.")
+def handler(board, color, failed, new):
     global prev_board
-    if prev_board == None:
+    if new or prev_board == None:
         prev_board = board
         return randrange(0,7)
     else:
@@ -21,7 +16,7 @@ def handler(board, color, failed):
         while player_move == -1 and row<6:
             column = 0
             while player_move == -1 and column<7:
-                if board[row][column] != prev_board[row][column]:
+                if board[row][column] != color and board[row][column] != prev_board[row][column]:
                     player_move = column
                 column+=1
             row +=1
@@ -34,11 +29,11 @@ def handler(board, color, failed):
         column = randrange(col_min, col_max)
         while board[0][column] != 0:
             column = randrange(0,7)
+        prev_board = board
         return column
 
-bot = Bot("endpoint here","your username here", "your password here")
 
-
+bot = Bot('backend address', 'username', 'password', ranked = True)
 bot.set_game_handler(handler)
 bot.connect()
 bot.start()

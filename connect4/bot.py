@@ -129,12 +129,14 @@ class Bot:
         def __new__game_handler__(data):
             self.game = Game(self, data['id'])
             self.game.update()
+            self.game.__make_move__()
 
         @self.io.on("game update")
         def __update_game_handler__():
             if self.game:
                 self.game.update()
-            if self.game.ended:
-                print("Game ended. Winner: " + str(self.game.winner))
-                self.game = None
-                self.__subscribe__() 
+                self.game.__make_move__()
+                if self.game.ended:
+                    print("Game ended. Winner: " + str(self.game.winner))
+                    self.game = None
+                    self.__subscribe__() 
